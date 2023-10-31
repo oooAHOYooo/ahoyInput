@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Song</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<input type="file" id="jsonFile" accept=".json">
+<button onclick="handleFile()">Load JSON</button>
+<br><br>
+
+<form id="songForm" class="hidden">
+    <label for="songId">Song ID:</label><br>
+    <input type="number" id="songId" name="id" required><br>
+    <label for="artist">Artist Name:</label><br>
+    <input type="text" id="artist" name="artist" required><br>
+    <label for="songTitle">Song Title:</label><br>
+    <input type="text" id="songTitle" name="songTitle" required><br>
+    <label for="artistUrl">Artist URL:</label><br>
+    <input type="url" id="artistUrl" name="artistUrl"><br>
+    <label for="mp3url">MP3 URL:</label><br>
+    <input type="url" id="mp3url" name="mp3url" required><br>
+    <label for="featured">Featured:</label><br>
+    <input type="checkbox" id="featured" name="featured"><br>
+    <label for="new">New:</label><br>
+    <input type="checkbox" id="new" name="new"><br>
+    <label for="artistPage">Artist Page:</label><br>
+    <input type="checkbox" id="artistPage" name="artistPage"><br>
+    <input type="submit" value="Submit">
+</form>
+
+<button class="hidden" onclick="exportToJson()">Export to JSON</button>
+
+<script>
+    let library = { songs: [] };
+
+    function handleFile() {
+        const fileInput = document.getElementById('jsonFile');
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                library = JSON.parse(event.target.result);
+                document.getElementById('songForm').classList.remove('hidden');
+                document.querySelector('button.hidden').classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    const songForm = document.getElementById('songForm');
+    songForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(songForm);
+        const songData = Object.fromEntries(formData);
+        songData.featured = formData.get('featured') ? true : false;
+        songData.new = formData.get('new') ? true : false;
+        songData.artistPage = formData.get('artistPage') ? true : false;
+        library.songs.push(songData);
+    });
+
+    function exportToJson() {
+        const dataStr = JSON.stringify(library, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const exportFileDefaultName = 'data.json';
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+</script>
+
+</body>
+</html>
