@@ -12,6 +12,43 @@
         .hidden {
             display: none;
         }
+        #songForm {
+            background-color: #2a2a2a;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+        label, input {
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        label {
+            color: #FFF;
+        }
+        input[type="number"],
+        input[type="text"],
+        input[type="url"] {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            background-color: #333;
+            color: #FFF;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5);
+            margin-right: 0.5rem;
+        }
+        input[type="submit"] {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +80,11 @@
 <button class="hidden" onclick="exportToJson()">Export to JSON</button>
 
 <script>
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    let yy = today.getFullYear();
+
     let library = { songs: [] };
 
     function handleFile() {
@@ -60,6 +102,8 @@
     }
 
     const songForm = document.getElementById('songForm');
+    const submitButton = document.getElementById('submitButton');
+
     songForm.addEventListener('submit', function(event) {
         event.preventDefault();
         const formData = new FormData(songForm);
@@ -68,17 +112,51 @@
         songData.new = formData.get('new') ? true : false;
         songData.artistPage = formData.get('artistPage') ? true : false;
         library.songs.push(songData);
+
+        // Disable the submit button and hide the form after submission
+        submitButton.disabled = true;
+        songForm.style.display = 'none';
+
+        // Add this line to show a popup when the form is submitted
+        alert("Success");
     });
 
     function exportToJson() {
         const dataStr = JSON.stringify(library, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const exportFileDefaultName = 'data.json';
+        let todayStr = yy + mm + dd;
+        const exportFileDefaultName = todayStr + '_l5.json';
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
     }
+
+    function handleFile() {
+    const fileInput = document.getElementById('jsonFile');
+    const file = fileInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            library = JSON.parse(event.target.result);
+            document.getElementById('songForm').classList.remove('hidden');
+            document.querySelector('button.hidden').classList.remove('hidden');
+
+            // Calculate total number of songs and latest song ID
+            const totalSongs = library.songs.length;
+            const latestSongId = library.songs[library.songs.length - 1].id;
+
+            // Display the total number of songs and the latest song ID
+            const displayElement = document.createElement('p');
+            displayElement.textContent = `Total entries: ${totalSongs} - LATEST SONG ID = ${latestSongId}`;
+            document.body.appendChild(displayElement);
+        };
+        reader.readAsText(file);
+    }
+}
+
+
+
 </script>
 
 </body>
